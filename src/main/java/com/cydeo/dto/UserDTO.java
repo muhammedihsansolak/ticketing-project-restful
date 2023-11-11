@@ -1,6 +1,9 @@
 package com.cydeo.dto;
 
 import com.cydeo.enums.Gender;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -10,6 +13,7 @@ import javax.validation.constraints.*;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class UserDTO {
 
     private Long id;
@@ -34,10 +38,12 @@ public class UserDTO {
     @Email
     private String userName;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @NotBlank
     @Pattern(regexp = "(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{4,}")
     private String passWord;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @NotNull
     private String confirmPassWord;
 
