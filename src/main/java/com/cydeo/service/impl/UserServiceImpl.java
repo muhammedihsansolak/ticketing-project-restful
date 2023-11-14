@@ -1,5 +1,6 @@
 package com.cydeo.service.impl;
 
+import com.cydeo.annotation.DefaultExceptionMessage;
 import com.cydeo.dto.ProjectDTO;
 import com.cydeo.dto.TaskDTO;
 import com.cydeo.dto.UserDTO;
@@ -66,6 +67,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @DefaultExceptionMessage(defaultMessage = "Failed to delete user!")
     public void delete(String username) {
         User foundUser = userRepository.findByUserNameAndIsDeleted(username, false);
         if (checkIfUserCanBeDeleted(foundUser)) {
