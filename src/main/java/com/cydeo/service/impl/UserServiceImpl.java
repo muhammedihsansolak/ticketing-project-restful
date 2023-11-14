@@ -4,8 +4,10 @@ import com.cydeo.dto.ProjectDTO;
 import com.cydeo.dto.TaskDTO;
 import com.cydeo.dto.UserDTO;
 import com.cydeo.entity.User;
-import com.cydeo.mapper.UserMapper;
+import com.cydeo.exception.TicketingProjectException;
+import com.cydeo.mapper.MapperUtil;
 import com.cydeo.repository.UserRepository;
+import com.cydeo.service.KeycloakService;
 import com.cydeo.service.ProjectService;
 import com.cydeo.service.TaskService;
 import com.cydeo.service.UserService;
@@ -19,87 +21,79 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-    private final UserMapper userMapper;
+    private final MapperUtil mapper;
     private final ProjectService projectService;
     private final TaskService taskService;
+    private final KeycloakService keycloakService;
 
-    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, @Lazy ProjectService projectService, @Lazy TaskService taskService) {
+    public UserServiceImpl(UserRepository userRepository, MapperUtil mapper, @Lazy ProjectService projectService, @Lazy TaskService taskService, KeycloakServiceImpl keycloakService) {
         this.userRepository = userRepository;
-        this.userMapper = userMapper;
+        this.mapper = mapper;
         this.projectService = projectService;
         this.taskService = taskService;
-    }
-
-    @Override
-    public UserDTO findByUserName(String username) {
-        User user = userRepository.findByUserNameAndIsDeleted(username, false);
-        return userMapper.convertToDto(user);
+        this.keycloakService = keycloakService;
     }
 
     @Override
     public List<UserDTO> listAllUsers() {
         List<User> userList = userRepository.findAllByIsDeletedOrderByFirstNameDesc(false);
-        return userList.stream().map(userMapper::convertToDto).collect(Collectors.toList());
+        return userList.stream()
+                .map(user -> mapper.convert(user, new UserDTO()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public UserDTO findByUserName(String username) {
+        User user = userRepository.findByUserNameAndIsDeleted(username, false);
+        return mapper.convert(user, new UserDTO());
     }
 
     @Override
     public void save(UserDTO user) {
-
-        user.setEnabled(true);
-
-        User obj = userMapper.convertToEntity(user);
-
-        userRepository.save(obj);
-
+        User userEntity = mapper.convert(user, new User());
+        userEntity.setEnabled(true);
+        userRepository.save(userEntity);
+        keycloakService.userCreate(user);
     }
-
-//    @Override
-//    public void deleteByUserName(String username) {
-//
-//        userRepository.deleteByUserName(username);
-//    }
 
     @Override
     public UserDTO update(UserDTO user) {
-        User userEntity = userRepository.findByUserNameAndIsDeleted(user.getUserName(), false);
-        User convertedUser = userMapper.convertToEntity(user);
-        convertedUser.setId(userEntity.getId());
-        userRepository.save(convertedUser);
+        User foundUser = userRepository.findByUserNameAndIsDeleted(user.getUserName(), false);
+        User userToUpdate = mapper.convert(user, new User());
+        userToUpdate.setId(foundUser.getId());
+        userRepository.save(userToUpdate);
         return findByUserName(user.getUserName());
     }
 
     @Override
     public void delete(String username) {
-
-        User user = userRepository.findByUserNameAndIsDeleted(username, false);
-
-        if (checkIfUserCanBeDeleted(user)) {
-            user.setIsDeleted(true);
-            user.setUserName(user.getUserName() + "-" + user.getId());
-            userRepository.save(user);
-        }
-
+        User foundUser = userRepository.findByUserNameAndIsDeleted(username, false);
+        if (checkIfUserCanBeDeleted(foundUser)) {
+            foundUser.setIsDeleted(true);
+            foundUser.setUserName(foundUser.getUserName() + "-" + foundUser.getId());
+            userRepository.save(foundUser);
+        }else throw new TicketingProjectException("User cannot be deleted!");
     }
 
     @Override
     public List<UserDTO> listAllByRole(String role) {
         List<User> users = userRepository.findByRoleDescriptionIgnoreCaseAndIsDeleted(role, false);
-        return users.stream().map(userMapper::convertToDto).collect(Collectors.toList());
+        return users.stream()
+                .map(user -> mapper.convert(user, new UserDTO()))
+                .collect(Collectors.toList());
     }
 
     private boolean checkIfUserCanBeDeleted(User user) {
-
-        switch (user.getRole().getDescription()) {
+        UserDTO convertedUser = mapper.convert(user, new UserDTO());
+        switch (convertedUser.getRole().getDescription()) {
             case "Manager":
-                List<ProjectDTO> projectDTOList = projectService.listAllNonCompletedByAssignedManager(userMapper.convertToDto(user));
-                return projectDTOList.size() == 0;
+                List<ProjectDTO> projectDTOList = projectService.listAllNonCompletedByAssignedManager(convertedUser);
+                return projectDTOList.size() == 0; //if there is any project assigned, manager cannot be deleted
             case "Employee":
-                List<TaskDTO> taskDTOList = taskService.listAllNonCompletedByAssignedEmployee(userMapper.convertToDto(user));
-                return taskDTOList.size() == 0;
+                List<TaskDTO> taskDTOList = taskService.listAllNonCompletedByAssignedEmployee(convertedUser);
+                return taskDTOList.size() == 0; //if there is any task assigned, employee cannot be deleted
             default:
                 return true;
         }
-
     }
-
 }

@@ -5,18 +5,19 @@ import com.cydeo.dto.TaskDTO;
 import com.cydeo.dto.UserDTO;
 import com.cydeo.entity.Project;
 import com.cydeo.entity.Task;
+import com.cydeo.entity.User;
 import com.cydeo.enums.Status;
-import com.cydeo.mapper.ProjectMapper;
-import com.cydeo.mapper.TaskMapper;
-import com.cydeo.mapper.UserMapper;
+import com.cydeo.exception.TicketingProjectException;
+import com.cydeo.mapper.MapperUtil;
 import com.cydeo.repository.TaskRepository;
 import com.cydeo.service.TaskService;
 import com.cydeo.service.UserService;
 import org.keycloak.adapters.springsecurity.account.SimpleKeycloakAccount;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -26,69 +27,58 @@ import java.util.stream.Collectors;
 public class TaskServiceImpl implements TaskService {
 
     private final TaskRepository taskRepository;
-    private final TaskMapper taskMapper;
-    private final ProjectMapper projectMapper;
     private final UserService userService;
-    private final UserMapper userMapper;
+    private final MapperUtil mapper;
 
-    public TaskServiceImpl(TaskRepository taskRepository, TaskMapper taskMapper, ProjectMapper projectMapper, UserService userService, UserMapper userMapper) {
+    @Autowired
+    public TaskServiceImpl(TaskRepository taskRepository, UserService userService, MapperUtil mapper) {
         this.taskRepository = taskRepository;
-        this.taskMapper = taskMapper;
-        this.projectMapper = projectMapper;
         this.userService = userService;
-        this.userMapper = userMapper;
-    }
-
-    @Override
-    public TaskDTO findById(Long id) {
-
-        Optional<Task> task = taskRepository.findById(id);
-
-        if(task.isPresent()){
-            return taskMapper.convertToDto(task.get());
-        }
-        return null;
+        this.mapper = mapper;
     }
 
     @Override
     public List<TaskDTO> listAllTasks() {
-        return taskRepository.findAll().stream().map(taskMapper::convertToDto).collect(Collectors.toList());
+        List<Task> taskList = taskRepository.findAll(Sort.by("taskSubject"));
+        return taskList.stream()
+                .map(task -> mapper.convert(task, new TaskDTO()))
+                .collect(Collectors.toList());
     }
 
     @Override
     public void save(TaskDTO dto) {
-
         dto.setTaskStatus(Status.OPEN);
         dto.setAssignedDate(LocalDate.now());
-        Task task = taskMapper.convertToEntity(dto);
+        Task task = mapper.convert(dto, new Task());
         taskRepository.save(task);
-
     }
 
     @Override
     public void update(TaskDTO dto) {
-
         Optional<Task> task = taskRepository.findById(dto.getId());
-        Task convertedTask  = taskMapper.convertToEntity(dto);
-
+        Task convertedTask  = mapper.convert(task, new Task());
         if(task.isPresent()){
             convertedTask.setTaskStatus(dto.getTaskStatus() == null ? task.get().getTaskStatus() : dto.getTaskStatus());
             convertedTask.setAssignedDate(task.get().getAssignedDate());
             taskRepository.save(convertedTask);
-        }
-
+        } else throw new TicketingProjectException("Task not found with id: "+dto.getId());
     }
 
     @Override
     public void delete(Long id) {
-
         Optional<Task> foundTask = taskRepository.findById(id);
-
         if(foundTask.isPresent()){
             foundTask.get().setIsDeleted(true);
             taskRepository.save(foundTask.get());
         }
+    }
 
+    @Override
+    public TaskDTO findById(Long id) {
+        Optional<Task> task = taskRepository.findById(id);
+        if(task.isPresent()){
+            return mapper.convert(task, new TaskDTO());
+        } else throw new TicketingProjectException("Task not found with id: "+id);
     }
 
     @Override
@@ -103,18 +93,20 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public void deleteByProject(ProjectDTO projectDTO) {
-        Project project = projectMapper.convertToEntity(projectDTO);
-        List<Task> tasks = taskRepository.findAllByProject(project);
+        Project projectToDelete = mapper.convert(projectDTO, new Project());
+        List<Task> tasks = taskRepository.findAllByProject(projectToDelete); //related tasks deleted as well as project deleted
         tasks.forEach(task -> delete(task.getId()));
     }
 
     @Override
     public void completeByProject(ProjectDTO projectDTO) {
-        Project project = projectMapper.convertToEntity(projectDTO);
+        Project project = mapper.convert(projectDTO, new Project());
         List<Task> tasks = taskRepository.findAllByProject(project);
-        tasks.stream().map(taskMapper::convertToDto).forEach(taskDTO -> {
-            taskDTO.setTaskStatus(Status.COMPLETE);
-            update(taskDTO);
+        tasks.stream()
+                .map(task -> mapper.convert(task, new TaskDTO()))//related tasks completed as well as project completed
+                .forEach(taskDTO -> {
+                    taskDTO.setTaskStatus(Status.COMPLETE);
+                    update(taskDTO);
         });
     }
 
@@ -125,31 +117,39 @@ public class TaskServiceImpl implements TaskService {
         String username = details.getKeycloakSecurityContext().getToken().getPreferredUsername();
 
         UserDTO loggedInUser = userService.findByUserName(username);
+        List<Task> tasks = taskRepository
+                .findAllByTaskStatusIsNotAndAssignedEmployee
+                        (status, mapper.convert(loggedInUser, new User()));
 
-        List<Task> tasks = taskRepository.
-                findAllByTaskStatusIsNotAndAssignedEmployee(status, userMapper.convertToEntity(loggedInUser));
-        return tasks.stream().map(taskMapper::convertToDto).collect(Collectors.toList());
+        return tasks.stream()
+                .map(task -> mapper.convert(task, new TaskDTO()))
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<TaskDTO> listAllTasksByStatus(Status status) {
-
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         SimpleKeycloakAccount details = (SimpleKeycloakAccount) authentication.getDetails();
         String username = details.getKeycloakSecurityContext().getToken().getPreferredUsername();
 
         UserDTO loggedInUser = userService.findByUserName(username);
-
         List<Task> tasks = taskRepository.
-                findAllByTaskStatusAndAssignedEmployee(status, userMapper.convertToEntity(loggedInUser));
-        return tasks.stream().map(taskMapper::convertToDto).collect(Collectors.toList());
+                findAllByTaskStatusAndAssignedEmployee
+                        (status, mapper.convert(loggedInUser, new User()));
+
+        return tasks.stream()
+                .map(task -> mapper.convert(task, new TaskDTO()))
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<TaskDTO> listAllNonCompletedByAssignedEmployee(UserDTO assignedEmployee) {
         List<Task> tasks = taskRepository
-                .findAllByTaskStatusIsNotAndAssignedEmployee(Status.COMPLETE, userMapper.convertToEntity(assignedEmployee));
-        return tasks.stream().map(taskMapper::convertToDto).collect(Collectors.toList());
+                .findAllByTaskStatusIsNotAndAssignedEmployee
+                        (Status.COMPLETE, mapper.convert(assignedEmployee, new User()));
+        return tasks.stream()
+                .map(task -> mapper.convert(task, new TaskDTO()))
+                .collect(Collectors.toList());
     }
 
 }

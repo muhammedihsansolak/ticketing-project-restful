@@ -3,6 +3,11 @@ package com.cydeo.controller;
 import com.cydeo.dto.ResponseWrapper;
 import com.cydeo.dto.UserDTO;
 import com.cydeo.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +17,7 @@ import javax.annotation.security.RolesAllowed;
 
 @RestController
 @RequestMapping("/api/v1/user")
+@Tag(name="User Controller", description = "User API")
 public class UserController {
 
     private final UserService userService;
@@ -23,6 +29,24 @@ public class UserController {
 
     @GetMapping
     @RolesAllowed({"Admin","Manager"})
+    @Operation(summary = "Get all users")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Successfully retrieved users(OK)",
+                    content = @Content(mediaType = "application/json")
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Bad request",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Not found",
+                    content = @Content
+            )
+    })
     public ResponseEntity<ResponseWrapper> getUsers(){
         return ResponseEntity.ok(new ResponseWrapper(
                 true,
@@ -35,6 +59,7 @@ public class UserController {
 
     @GetMapping("/{username}")
     @RolesAllowed({"Admin","Manager"})
+    @Operation(summary = "Get user by username")
     public ResponseEntity<ResponseWrapper> getUserByUsername(@PathVariable("username")String username){
         return ResponseEntity.ok(new ResponseWrapper(
                 true,
@@ -46,6 +71,7 @@ public class UserController {
 
     @PostMapping
     @RolesAllowed({"Admin"})
+    @Operation(summary = "Creates user")
     public ResponseEntity<ResponseWrapper> createUser(@RequestBody UserDTO userDTO){
         userService.save(userDTO);
 
@@ -59,6 +85,7 @@ public class UserController {
 
     @PutMapping
     @RolesAllowed({"Admin"})
+    @Operation(summary = "Updates user")
     public ResponseEntity<ResponseWrapper> updateUser(@RequestBody UserDTO userDTO){
         userService.update(userDTO);
 
@@ -72,6 +99,7 @@ public class UserController {
 
     @DeleteMapping("/{username}")
     @RolesAllowed({"Admin"})
+    @Operation(summary = "Deletes user")
     public ResponseEntity<ResponseWrapper> deleteUser(@PathVariable("username")String username){
         userService.delete(username);
 
