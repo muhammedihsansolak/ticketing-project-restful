@@ -74,6 +74,7 @@ public class UserServiceImpl implements UserService {
             foundUser.setIsDeleted(true);
             foundUser.setUserName(foundUser.getUserName() + "-" + foundUser.getId());
             userRepository.save(foundUser);
+            keycloakService.delete(username);
         }else throw new TicketingProjectException("User cannot be deleted!");
     }
 

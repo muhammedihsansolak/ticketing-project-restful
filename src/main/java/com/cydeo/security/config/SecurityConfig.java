@@ -26,7 +26,7 @@ public class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
         super.configure(http);
         http.authorizeRequests()
                 .anyRequest()
-                .permitAll(); //all end-points open to everyone. I can use either antMatcer() or EnableGlobalMethodSecurity annotations to restrict
+                .permitAll(); //all end-points open to everyone. I can use either antMatcher() or EnableGlobalMethodSecurity annotations to restrict
         http.csrf().disable();
     }
 

@@ -4,6 +4,7 @@ import com.cydeo.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.keycloak.adapters.springsecurity.account.SimpleKeycloakAccount;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -13,11 +14,15 @@ import javax.persistence.PreUpdate;
 import java.time.LocalDateTime;
 
 @Component
-@AllArgsConstructor
-@NoArgsConstructor
 public class BaseEntityListener extends AuditingEntityListener {
 
-    private UserRepository userRepository;
+    private static UserRepository userRepository;
+
+    @Autowired
+    public void init(UserRepository userRepository) {
+        BaseEntityListener.userRepository = userRepository;
+    }
+    //https://stackoverflow.com/questions/12155632/injecting-a-spring-dependency-into-a-jpa-entitylistener
 
     @PrePersist
     private void onPrePersist(BaseEntity baseEntity) {
