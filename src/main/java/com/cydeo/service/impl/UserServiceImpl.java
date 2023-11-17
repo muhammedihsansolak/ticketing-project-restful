@@ -37,7 +37,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserDTO> listAllUsers() {
-        List<User> userList = userRepository.findAllByIsDeletedOrderByFirstNameDesc(false);
+        List<User> userList = userRepository.findAllByIsDeletedOrderById(false);
         return userList.stream()
                 .map(user -> mapper.convert(user, new UserDTO()))
                 .collect(Collectors.toList());
@@ -75,7 +75,7 @@ public class UserServiceImpl implements UserService {
             foundUser.setUserName(foundUser.getUserName() + "-" + foundUser.getId());
             userRepository.save(foundUser);
             keycloakService.delete(username);
-        }else throw new TicketingProjectException("User cannot be deleted!");
+        }else throw new TicketingProjectException("User has assigned roles/projects. Cannot be deleted!");
     }
 
     @Override

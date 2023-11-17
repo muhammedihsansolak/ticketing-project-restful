@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface UserRepository extends JpaRepository<User,Long> {
 
-    List<User> findAllByIsDeletedOrderByFirstNameDesc(Boolean deleted);
+    List<User> findAllByIsDeletedOrderById(Boolean deleted);
 
     User findByUserNameAndIsDeleted(String username, Boolean deleted);
 
