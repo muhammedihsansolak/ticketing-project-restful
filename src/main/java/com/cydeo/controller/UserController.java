@@ -1,5 +1,6 @@
 package com.cydeo.controller;
 
+import com.cydeo.annotation.ExecutionTime;
 import com.cydeo.dto.ResponseWrapper;
 import com.cydeo.dto.UserDTO;
 import com.cydeo.service.UserService;
@@ -47,6 +48,7 @@ public class UserController {
                     content = @Content
             )
     })
+    @ExecutionTime
     public ResponseEntity<ResponseWrapper> getUsers(){
         return ResponseEntity.ok(new ResponseWrapper(
                 true,
@@ -60,6 +62,7 @@ public class UserController {
     @GetMapping("/{username}")
     @RolesAllowed({"Admin","Manager"})
     @Operation(summary = "Get user by username")
+    @ExecutionTime
     public ResponseEntity<ResponseWrapper> getUserByUsername(@PathVariable("username")String username){
         return ResponseEntity.ok(new ResponseWrapper(
                 true,
