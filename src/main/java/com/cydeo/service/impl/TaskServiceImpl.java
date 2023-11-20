@@ -97,6 +97,7 @@ public class TaskServiceImpl implements TaskService {
         List<Task> tasks = taskRepository.findAllByProject(projectToDelete); //related tasks deleted as well as project deleted
         tasks.forEach(task -> delete(task.getId()));
     }
+    //CascadeType.DELETE can be used instead of this method if we apply hard delete
 
     @Override
     public void completeByProject(ProjectDTO projectDTO) {
