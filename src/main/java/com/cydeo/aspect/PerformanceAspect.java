@@ -14,23 +14,25 @@ import org.springframework.stereotype.Component;
 public class PerformanceAspect {
 
     @Pointcut("@annotation(com.cydeo.annotation.ExecutionTime)")
-    public void executionTime() {}
+    public void executionTime() {
+    }
 
     @Around("executionTime()")
-    public Object aroundAnyExecutionTimeAdvise(ProceedingJoinPoint proceedingJoinPoint){
+    public Object aroundAnyExecutionTimeAdvise(ProceedingJoinPoint proceedingJoinPoint) {
         Long beforeTime = System.currentTimeMillis();
         Object result = null;
 
-        log.info("Execution starts:");try{
+        log.info("Execution starts:");
+        try {
             result = proceedingJoinPoint.proceed();
-        } catch (Throwable t){
+        } catch (Throwable t) {
             t.printStackTrace();
         }
 
         Long afterTime = System.currentTimeMillis();
 
         log.info("Time taken to execute: {} ms - Method: {}",
-                (afterTime-beforeTime),
+                (afterTime - beforeTime),
                 proceedingJoinPoint.getSignature().toShortString()
         );
         return result;

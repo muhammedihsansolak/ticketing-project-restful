@@ -21,24 +21,24 @@ public class ProjectDTO {
 
     private Long id;
 
-    @NotBlank
+    @NotBlank(message = "Project name is required")
     private String projectName;
 
-    @NotBlank
+    @NotBlank(message = "Project code is required")
     private String projectCode;
 
-    @NotNull
+    @NotNull(message = "Assigned manager is required")
     private UserDTO assignedManager;
 
-    @NotNull
+    @NotNull(message = "Start date is required")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate startDate;
 
-    @NotNull
+    @NotNull(message = "End date is required")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate endDate;
 
-    @NotBlank
+    @NotBlank(message = "Project detail is required")
     private String projectDetail;
 
     private Status projectStatus;

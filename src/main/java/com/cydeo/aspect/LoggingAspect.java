@@ -13,11 +13,10 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class LoggingAspect {
 
-    @Pointcut("execution(* com.cydeo.controller.ProjectController.*()) || " +
-              "execution(* com.cydeo.controller.TaskController.*())")
-    public void anyProjectAndTaskController(){}
+    @Pointcut("execution(* com.cydeo.controller.*.*(..))")
+    public void anyController(){}
 
-    @Before("anyProjectAndTaskController()")
+    @Before("anyController()")
     public void beforeAnyProjectAndTaskControllerAdvise(JoinPoint joinPoint){
         log.info("Before -> Method: {}, User: {}",
                 joinPoint.getSignature().toShortString(),
@@ -25,7 +24,7 @@ public class LoggingAspect {
                 );
     }
 
-    @AfterReturning(pointcut = "anyProjectAndTaskController()", returning = "result")
+    @AfterReturning(pointcut = "anyController()", returning = "result")
     public void afterAnyProjectAndTaskControllerAdvise(JoinPoint joinPoint, Object result){
         log.info("After Returning -> Method: {}, User: {}, Results: {}",
                 joinPoint.getSignature().toShortString(),
@@ -34,7 +33,7 @@ public class LoggingAspect {
         );
     }
 
-    @AfterThrowing(pointcut = "anyProjectAndTaskController()", throwing = "exception")
+    @AfterThrowing(pointcut = "anyController()", throwing = "exception")
     public void afterAnyProjectAndTaskControllerAdvise(JoinPoint joinPoint, Exception exception){
         log.info("After Returning -> Method: {}, User: {}, Results: {}",
                 joinPoint.getSignature().toShortString(),

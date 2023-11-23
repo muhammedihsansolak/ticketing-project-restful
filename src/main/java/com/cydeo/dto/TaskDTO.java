@@ -16,16 +16,16 @@ public class TaskDTO {
 
     private Long id;
 
-    @NotNull
+    @NotNull(message = "Project is required")
     private ProjectDTO project;
 
-    @NotNull
+    @NotNull(message = "Assigned employee is required")
     private UserDTO assignedEmployee;
 
-    @NotBlank
+    @NotBlank(message = "Task subject is required")
     private String taskSubject;
 
-    @NotBlank
+    @NotBlank(message = "Task detail is required")
     private String taskDetail;
 
     private Status taskStatus;

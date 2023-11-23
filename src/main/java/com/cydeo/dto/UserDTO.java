@@ -26,37 +26,37 @@ public class UserDTO {
         this.id = id;
     }
 
-    @NotBlank
-    @Size(max = 15, min = 2)
+    @NotBlank(message = "First name is required")
+    @Size(max = 15, min = 2, message = "First name length should be min 2, max 15")
     private String firstName;
 
-    @NotBlank
-    @Size(max = 15, min = 2)
+    @NotBlank(message = "Last name is required")
+    @Size(max = 15, min = 2, message = "Last name length should be min 2, max 15")
     private String lastName;
 
-    @NotBlank
-    @Email
+    @NotBlank(message = "Username is required")
+    @Email(message = "Username should be proper E-mail format")
     private String userName;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    @NotBlank
-    @Pattern(regexp = "(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{4,}")
+    @NotBlank(message = "Password is required")
+    @Pattern(regexp = "(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{4,}", message = "Password must be at least 4 characters long and include at least one digit, one lowercase letter, and one uppercase letter.")
     private String passWord;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    @NotNull
+//    @NotBlank(message = "Password is required")
     private String confirmPassWord;
 
     private boolean enabled;
 
-    @NotBlank
-    @Pattern(regexp = "^\\d{10}$")
+    @NotBlank(message = "Phone is required")
+    @Pattern(regexp = "^\\d{10}$", message = "Phone should be 10-digit number")
     private String phone;
 
-    @NotNull
+    @NotNull(message = "Role is required")
     private RoleDTO role;
 
-    @NotNull
+    @NotNull(message = "Gender is required")
     private Gender gender;
 
     public String getPassWord() {
