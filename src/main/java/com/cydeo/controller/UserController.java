@@ -81,27 +81,8 @@ public class UserController {
     @PostMapping
     @RolesAllowed({"Admin"})
     @Operation(summary = "Creates user")
-    public ResponseEntity<ResponseWrapper> createUser(@Valid @RequestBody UserDTO userDTO, BindingResult bindingResult){
-        if (bindingResult.hasErrors()) {
-            List<FieldError> fieldErrors = bindingResult.getFieldErrors();
-            Map<String, Map<String, String>> response = new HashMap<>();
-            for (FieldError fieldError : fieldErrors) {
-                if (response.containsKey(fieldError.getField())) {
-                    response.get(fieldError.getField()).put(fieldError.getCode(), fieldError.getDefaultMessage());
-                } else {
-                    response.put(fieldError.getField(), new HashMap<>());
-                    response.get(fieldError.getField()).put(fieldError.getCode(), fieldError.getDefaultMessage());
-                }
-            }
-            return ResponseEntity.badRequest().body(
-                    ResponseWrapper.builder()
-                            .success(false)
-                            .message("Please check the input information")
-                            .code(HttpStatus.BAD_REQUEST.value())
-                            .data(response).build());
-        }
+    public ResponseEntity<ResponseWrapper> createUser(@Valid @RequestBody UserDTO userDTO){
         userService.save(userDTO);
-
         return ResponseEntity.status(HttpStatus.CREATED).body(ResponseWrapper.builder()
                 .success(true)
                 .message("User "+ userDTO.getUserName() +" is successfully created!")
@@ -113,27 +94,8 @@ public class UserController {
     @PutMapping
     @RolesAllowed({"Admin"})
     @Operation(summary = "Updates user")
-    public ResponseEntity<ResponseWrapper> updateUser(@Valid @RequestBody UserDTO userDTO, BindingResult bindingResult){
-        if (bindingResult.hasErrors()) {
-            List<FieldError> fieldErrors = bindingResult.getFieldErrors();
-            Map<String, Map<String, String>> response = new HashMap<>();
-            for (FieldError fieldError : fieldErrors) {
-                if (response.containsKey(fieldError.getField())) {
-                    response.get(fieldError.getField()).put(fieldError.getCode(), fieldError.getDefaultMessage());
-                } else {
-                    response.put(fieldError.getField(), new HashMap<>());
-                    response.get(fieldError.getField()).put(fieldError.getCode(), fieldError.getDefaultMessage());
-                }
-            }
-            return ResponseEntity.badRequest().body(
-                    ResponseWrapper.builder()
-                            .success(false)
-                            .message("Please check the input information")
-                            .code(HttpStatus.BAD_REQUEST.value())
-                            .data(response).build());
-        }
+    public ResponseEntity<ResponseWrapper> updateUser(@Valid @RequestBody UserDTO userDTO){
         userService.update(userDTO);
-
         return ResponseEntity.ok(ResponseWrapper.builder()
                 .success(true)
                 .message("User "+ userDTO.getUserName() +" is successfully updated!")
@@ -147,7 +109,6 @@ public class UserController {
     @Operation(summary = "Deletes user")
     public ResponseEntity<ResponseWrapper> deleteUser(@PathVariable("username")String username){
         userService.delete(username);
-
         return ResponseEntity.ok(ResponseWrapper.builder()
                 .success(true)
                 .message("User "+ username +" is successfully deleted!")
