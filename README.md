@@ -262,7 +262,7 @@ Aspect-Oriented Programming principles
 </html>
 
 
-```
+
 
 ### Prerequisites
 
@@ -272,11 +272,12 @@ Aspect-Oriented Programming principles
 
 
 ### Docker Run
+
 The application can be built and run by the `Docker` engine. 
 
 Please follow directions shown below in order to build and run the application with Docker Compose file;
 
-```sh
+```
 $ cd My-ticketing-project-REST
 $ docker-compose up -d
 ```
