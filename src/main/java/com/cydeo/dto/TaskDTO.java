@@ -3,6 +3,7 @@ package com.cydeo.dto;
 import com.cydeo.enums.Status;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
@@ -12,6 +13,7 @@ import java.time.LocalDate;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode
 public class TaskDTO {
 
     private Long id;

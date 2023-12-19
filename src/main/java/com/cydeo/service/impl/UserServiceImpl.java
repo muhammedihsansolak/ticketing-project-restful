@@ -13,9 +13,11 @@ import com.cydeo.service.ProjectService;
 import com.cydeo.service.TaskService;
 import com.cydeo.service.UserService;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,13 +28,15 @@ public class UserServiceImpl implements UserService {
     private final ProjectService projectService;
     private final TaskService taskService;
     private final KeycloakService keycloakService;
+    private PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserRepository userRepository, MapperUtil mapper, @Lazy ProjectService projectService, @Lazy TaskService taskService, KeycloakServiceImpl keycloakService) {
+    public UserServiceImpl(UserRepository userRepository, MapperUtil mapper, @Lazy ProjectService projectService, @Lazy TaskService taskService, KeycloakServiceImpl keycloakService, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.mapper = mapper;
         this.projectService = projectService;
         this.taskService = taskService;
         this.keycloakService = keycloakService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -46,15 +50,18 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDTO findByUserName(String username) {
         User user = userRepository.findByUserNameAndIsDeleted(username, false);
+        if (user == null) throw new NoSuchElementException("User Not Exists");
         return mapper.convert(user, new UserDTO());
     }
 
     @Override
-    public void save(UserDTO user) {
+    public UserDTO save(UserDTO user) {
         User userEntity = mapper.convert(user, new User());
         userEntity.setEnabled(true);
-        userRepository.save(userEntity);
+        userEntity.setPassWord(passwordEncoder.encode(userEntity.getPassWord()));
+        User savedUser = userRepository.save(userEntity);
         keycloakService.userCreate(user);
+        return mapper.convert(savedUser, new UserDTO());
     }
 
     @Override
