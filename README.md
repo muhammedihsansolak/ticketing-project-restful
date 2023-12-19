@@ -53,13 +53,6 @@ Aspect-Oriented Programming principles
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>API Documentation</title>
-  <style>
-    table {
-      border-collapse: collapse;
-      width: 100%;
-    }
-  </style>
 </head>
 <body>
 
