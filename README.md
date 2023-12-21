@@ -18,7 +18,7 @@ contributing to project execution and success.</ul>
 
 ### Technical Information
 <ul style="list-style-type:disc">
-This Maven-built application uses a three-tier architecture 
+<li>This Maven-built application uses a three-tier architecture 
 with a Controller, Service, and Repository. Followed RESTful principles for 
 scalable and maintainable APIs. Implemented PostgreSQL as the database. 
 Successfully interacted database using the JPA and Hibernate. Used
@@ -26,7 +26,7 @@ OAuth2 security framework for robust security. Keycloak served as the
 authorization server. Enhanced collaboration by documenting API 
 endpoints with OpenAPI3. Created integration tests to validate 
 functionalities. Efficiently managed cross-cutting concerns by applying 
-Aspect-Oriented Programming principles
+Aspect-Oriented Programming principles</li>
 </ul>
 
 ### Technologies
@@ -47,6 +47,41 @@ Aspect-Oriented Programming principles
 - Docker Compose
 - OpenAPI3
 - Lombok
+
+---
+![alt text](ticketing project architecture.png)
+
+---
+### Business Logics
+
+<ul style="list-style-type:disc">
+<li><B>Soft Delete Implementation:</B>
+<ul>The system uses a soft delete approach. This ensures that records are not permanently deleted. It protects historical data and maintains data integrity.</ul>
+</li>
+
+<li><B>Unique Constraints:</B>
+<ul>Made usernames and project codes unique in the system. This prevents duplication and ensures reliable identification.</ul>
+</li>
+
+<li><B>Manager Deletion Restriction:</B>
+<ul>Managers cannot be deleted if they are assigned to a project. This precaution prevents data loss by keeping managerial associations with ongoing projects.</ul>
+</li>
+
+<li><B>Employee Deletion Restriction:</B>
+<ul>Cannot delete employees with assigned tasks. This is to keep task data and avoid losing information by mistake.</ul>
+</li>
+
+<li><B>Manager Project Completion Authorization:</B>
+<ul>Managers can mark a project as completed only if all tasks for the project are also marked as completed. This ensures that projects are considered complete only when all related tasks are successfully finished, keeping a full view of project status.</ul>
+</li>
+
+<li><B>Admin Project Completion Authorization:</B>
+<ul>When an admin user marks a project as completed, all tasks associated with that project are also marked as completed. This keeps everything consistent and shows how projects and tasks are connected.</ul>
+</li>
+</ul>
+
+
+---
 
 <!DOCTYPE html>
 <html lang="en">
