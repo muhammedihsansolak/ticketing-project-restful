@@ -50,7 +50,7 @@ Aspect-Oriented Programming principles</li>
 
 ---
 <p align="center">
-    <img src="ticketing_project_architecture.png" alt="Main Information" width="700" height="500">
+    <img src="ticketing_project_architecture.png" alt="Main Information">
 </p>
 
 ---
