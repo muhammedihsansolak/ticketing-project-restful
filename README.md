@@ -49,7 +49,9 @@ Aspect-Oriented Programming principles</li>
 - Lombok
 
 ---
-![alt text](ticketing project architecture.png)
+<p align="center">
+    <img src="ticketing_project_architecture.png" alt="Main Information" width="700" height="500">
+</p>
 
 ---
 ### Business Logics
