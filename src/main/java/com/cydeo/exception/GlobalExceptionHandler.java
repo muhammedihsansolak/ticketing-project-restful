@@ -8,11 +8,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.util.ObjectUtils;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.HandlerMethod;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @RestControllerAdvice
@@ -36,6 +41,30 @@ public class GlobalExceptionHandler {
                 .code(HttpStatus.FORBIDDEN.value())
                 .message(message).build(),
                 HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler({MethodArgumentNotValidException.class})
+    public ResponseEntity<ValidationExceptionResponse> validationExceptionHandler(MethodArgumentNotValidException exception){
+        exception.printStackTrace();
+
+        ValidationExceptionResponse response = new ValidationExceptionResponse("Invalid input(s)", HttpStatus.BAD_REQUEST);
+
+        List<ValidationException> validationErrors = new ArrayList<>();
+
+        for (ObjectError error : exception.getBindingResult().getAllErrors()) {
+            String fieldName = ((FieldError) error).getField();
+            Object rejectedValue = ((FieldError) error).getRejectedValue();
+            String errorMessage = error.getDefaultMessage();
+
+            ValidationException validationException = new ValidationException(fieldName, rejectedValue, errorMessage);
+            validationErrors.add(validationException);
+        }
+
+        response.setValidationExceptions(validationErrors);
+        response.setErrorCount(validationErrors.size());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(response);
     }
 
     @ExceptionHandler({
